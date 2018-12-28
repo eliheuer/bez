@@ -1,5 +1,9 @@
 # Import modules and librariese
 import pyxel
+
+import xmltodict
+
+
 from collections import namedtuple
 from random import randint
 
@@ -20,6 +24,8 @@ class Bez:
     # Initialization.
     def __init__(self):
         pyxel.init(WIDTH, HEIGHT, caption="Bez!", fps=60)
+        with open('path/to/file.xml') as fd:
+            doc = xmltodict.parse(fd.read())
         self.reset()
         pyxel.run(self.update, self.draw)
 
@@ -28,6 +34,7 @@ class Bez:
         self.done = False
         self.score = 0
         self.handel_locations = []
+        self.zoom = 25
         for i in range(0, 3):
             self.generate_handel()
 
@@ -72,15 +79,15 @@ class Bez:
     def draw(self):
         if not self.done:
             pyxel.cls(COL_BACKGROUND)
+            self.draw_em_square()
             self.draw_active_handel()
             self.draw_score()
             self.draw_handels()
-            self.draw_em_square()
         else:
             self.draw_death()
 
     def draw_em_square(self):
-        glyph_width = 128
+        glyph_width = 150
         glyph_height = 200
         bottom_edge = (HEIGHT - glyph_height) / 2
         left_edge = (WIDTH - glyph_width) / 2
