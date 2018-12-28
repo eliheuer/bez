@@ -1,28 +1,30 @@
-#Import modules/libraries
+# Import modules and librariese
 import pyxel
 from collections import namedtuple
 from random import randint
 
-#Named tuple for cartesian points
+
+# Named tuple for cartesian points
 Point = namedtuple("Point", ["x", "y"])
 
-#Constants
-COL_BACKGROUND = 0 
-COL_SCORE = 12
+
+# Constants
+COL_BACKGROUND = 0
+COL_SCORE = 11
 WIDTH = 255
 HEIGHT = 255
-START = Point((WIDTH/2) - 2, HEIGHT - 11)
+
 
 class Bez:
-    
-    #Initialization.
+
+    # Initialization.
     def __init__(self):
-        pyxel.init(WIDTH, HEIGHT, caption = "Bez!", fps = 60)
+        pyxel.init(WIDTH, HEIGHT, caption="Bez!", fps=60)
         self.reset()
         pyxel.run(self.update, self.draw)
 
     def reset(self):
-        self.location = START
+        self.location = Point(WIDTH / 2, HEIGHT / 2)
         self.done = False
         self.score = 0
         self.handel_locations = []
@@ -37,12 +39,12 @@ class Bez:
             new = Point(x, y)
             valid = True
             for i in self.handel_locations:
-                if (x == i.x and y == i.y):
+                if x == i.x and y == i.y:
                     valid = False
             if valid:
                 self.handel_locations.append(new)
 
-    #Update Logic.
+    # Update Logic.
     def update(self):
         if not self.done:
             self.update_location()
@@ -63,10 +65,10 @@ class Bez:
                 new = Point(old.x - 1, old.y)
                 self.location = new
         elif pyxel.btn(pyxel.KEY_SPACE):
-            #self.shoot()
+            # self.next_point()
             pass
 
-    #Draw Logic.
+    # Draw Logic.
     def draw(self):
         if not self.done:
             pyxel.cls(COL_BACKGROUND)
@@ -78,27 +80,32 @@ class Bez:
 
     def draw_active_handel(self):
         x = self.location.x
-        y = self.location.y 
+        y = self.location.y
         pyxel.circ(x, y, 4, 11)
 
     def draw_handels(self):
-        step = 0
         for i in self.handel_locations:
             x1 = i.x
             y1 = i.y
-            if step < 3:
-                x2 = WIDTH/2
-                y2 = HEIGHT/2
-                pyxel.line(x1, y1, x2, y2, 12)
-            pyxel.circ(x1, y1, 4, 8)    
+            last_location = i
+            if i == 0:
+                x2 = START
+                y2 = START
+            else:
+                x2 = last_location.x
+                y2 = last_location.y
+
+            pyxel.line(x1, y1, x2, y2, 12)
+            pyxel.circ(x1, y1, 4, 8)
+
             location = "(" + str(i.x) + "," + str(i.y) + ")"
-            pyxel.text(x1+6, y1, location, 11)
-            step += 1
+            pyxel.text(x1 + 6, y1 - 2, location, 11)
 
     def draw_score(self):
         score = "{:09}".format(self.score)
         pyxel.rect(0, 0, WIDTH, 4, COL_BACKGROUND)
         pyxel.text(1, 1, score, COL_SCORE)
 
-#Call Application
+
+# Call Application
 Bez()
