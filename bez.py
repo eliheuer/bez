@@ -1,9 +1,6 @@
 # Import modules and librariese
 import pyxel
-
 import xmltodict
-
-
 from collections import namedtuple
 from random import randint
 
@@ -24,8 +21,9 @@ class Bez:
     # Initialization.
     def __init__(self):
         pyxel.init(WIDTH, HEIGHT, caption="Bez!", fps=60)
-        with open('path/to/file.xml') as fd:
-            doc = xmltodict.parse(fd.read())
+        with open('E_.glif') as fd:
+            self.glif = xmltodict.parse(fd.read())
+        print(self.glif['glyph']['@name'])
         self.reset()
         pyxel.run(self.update, self.draw)
 
@@ -155,4 +153,5 @@ class Bez:
 
 
 # Call Application
-Bez()
+if __name__ == "__main__":
+    Bez()
