@@ -75,8 +75,47 @@ class Bez:
             self.draw_active_handel()
             self.draw_score()
             self.draw_handels()
+            self.draw_em_square()
         else:
             self.draw_death()
+
+    def draw_em_square(self):
+        glyph_width = 128
+        glyph_height = 200
+        bottom_edge = (HEIGHT - glyph_height) / 2
+        left_edge = (WIDTH - glyph_width) / 2
+
+        # Left edge
+        pyxel.line(left_edge, bottom_edge,
+                   left_edge, bottom_edge + glyph_height, 5)
+        
+        # Right edge
+        pyxel.line(left_edge + glyph_width, bottom_edge,
+                   left_edge + glyph_width, bottom_edge + glyph_height, 5)
+        
+        # Top edge
+        pyxel.line(left_edge, bottom_edge,
+                   left_edge + glyph_width, bottom_edge, 5)
+    
+        # Bottom edge
+        pyxel.line(left_edge, bottom_edge + glyph_height,
+                   left_edge + glyph_width, bottom_edge + glyph_height, 5)
+
+        # Bottom edge
+        pyxel.line(left_edge, bottom_edge + 10,
+                   left_edge + glyph_width, bottom_edge + 10, 5)
+
+        # Bottom edge
+        pyxel.line(left_edge, bottom_edge + 20,
+                   left_edge + glyph_width, bottom_edge + 20, 5)
+
+        # Bottom edge
+        pyxel.line(left_edge, bottom_edge + 90,
+                   left_edge + glyph_width, bottom_edge + 90, 5)
+
+        # Bottom edge
+        pyxel.line(left_edge, bottom_edge + 150,
+                   left_edge + glyph_width, bottom_edge + 150, 5)
 
     def draw_active_handel(self):
         x = self.location.x
@@ -84,22 +123,23 @@ class Bez:
         pyxel.circ(x, y, 4, 11)
 
     def draw_handels(self):
-        for i in self.handel_locations:
-            x1 = i.x
-            y1 = i.y
-            last_location = i
-            if i == 0:
-                x2 = START
-                y2 = START
+        last_location = None
+        for j in self.handel_locations:
+            x1 = j.x
+            y1 = j.y
+            if last_location == None:
+                x2 = j.x
+                y2 = j.y
             else:
                 x2 = last_location.x
                 y2 = last_location.y
 
-            pyxel.line(x1, y1, x2, y2, 12)
             pyxel.circ(x1, y1, 4, 8)
+            pyxel.line(x1, y1, x2, y2, 8)
 
-            location = "(" + str(i.x) + "," + str(i.y) + ")"
+            location = "(" + str(j.x) + "," + str(j.y) + ")"
             pyxel.text(x1 + 6, y1 - 2, location, 11)
+            last_location = j
 
     def draw_score(self):
         score = "{:09}".format(self.score)
