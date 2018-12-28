@@ -1,4 +1,4 @@
-# Import modules and librariese
+# Library and module imports
 import pyxel
 import xmltodict
 from collections import namedtuple
@@ -9,37 +9,58 @@ from random import randint
 Point = namedtuple("Point", ["x", "y"])
 
 
-# Constants
 COL_BACKGROUND = 0
-COL_SCORE = 11
+COL_INFO = 11
 WIDTH = 255
 HEIGHT = 255
 
 
 class Bez:
 
-    # Initialization.
+    # Initialization
     def __init__(self):
-        pyxel.init(WIDTH, HEIGHT, caption="Bez!", fps=60)
-        with open('E_.glif') as fd:
-            self.glif = xmltodict.parse(fd.read())
-        print(self.glif['glyph']['@name'])
+        pyxel.init(WIDTH, HEIGHT, caption="Bez", fps=60)
+        pyxel.image(0).load(0, 0, "assets/pencil_16x16.png")
+        pyxel.mouse(True)
+        self.read_glif()
         self.reset()
         pyxel.run(self.update, self.draw)
 
     def reset(self):
         self.location = Point(WIDTH / 2, HEIGHT / 2)
         self.done = False
-        self.score = 0
+        self.info = 0
         self.handel_locations = []
         self.zoom = 25
-        for i in range(0, 3):
+        for i in range(0, 9):
             self.generate_handel()
 
+    def read_glif(self):
+        print("[+] Reading E_.glig")
+        try:
+            with open('E_.glif') as fd:
+                self.glif = xmltodict.parse(fd.read())
+        except FileNotFoundError:
+            print("[!] Error: File not found")
+        else:
+            print("[!] Done\n")
+
+        # Name 
+        glyph_name = self.glif['glyph']['@name']
+        print("glyph name:\t", glyph_name)
+
+        # Format 
+        glyph_format = self.glif['glyph']['@format']
+        print("glyph format:\t", glyph_format)
+
+        # Width 
+        glyph_width = self.glif['glyph']['advance']['@width']
+        print("glyph width:\t", glyph_width)
+        
     def generate_handel(self):
         valid = False
         while not valid:
-            x = randint(8, WIDTH - 8)
+            x = randint(8, WIDTH + 100)
             y = randint(8, HEIGHT - 8)
             new = Point(x, y)
             valid = True
@@ -78,8 +99,9 @@ class Bez:
         if not self.done:
             pyxel.cls(COL_BACKGROUND)
             self.draw_em_square()
+            self.test_blt()
             self.draw_active_handel()
-            self.draw_score()
+            self.draw_info()
             self.draw_handels()
         else:
             self.draw_death()
@@ -89,38 +111,43 @@ class Bez:
         glyph_height = 200
         bottom_edge = (HEIGHT - glyph_height) / 2
         left_edge = (WIDTH - glyph_width) / 2
-
+        line_col = 1
+        
         # Left edge
         pyxel.line(left_edge, bottom_edge,
-                   left_edge, bottom_edge + glyph_height, 5)
+                   left_edge, bottom_edge + glyph_height, line_col)
         
         # Right edge
         pyxel.line(left_edge + glyph_width, bottom_edge,
-                   left_edge + glyph_width, bottom_edge + glyph_height, 5)
+                   left_edge + glyph_width, bottom_edge + glyph_height, line_col)
         
         # Top edge
         pyxel.line(left_edge, bottom_edge,
-                   left_edge + glyph_width, bottom_edge, 5)
+                   left_edge + glyph_width, bottom_edge, line_col)
     
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + glyph_height,
-                   left_edge + glyph_width, bottom_edge + glyph_height, 5)
+                   left_edge + glyph_width, bottom_edge + glyph_height, line_col)
 
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + 10,
-                   left_edge + glyph_width, bottom_edge + 10, 5)
+                   left_edge + glyph_width, bottom_edge + 10, line_col)
 
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + 20,
-                   left_edge + glyph_width, bottom_edge + 20, 5)
+                   left_edge + glyph_width, bottom_edge + 20, line_col)
 
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + 90,
-                   left_edge + glyph_width, bottom_edge + 90, 5)
+                   left_edge + glyph_width, bottom_edge + 90, line_col)
 
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + 150,
-                   left_edge + glyph_width, bottom_edge + 150, 5)
+                   left_edge + glyph_width, bottom_edge + 150, line_col)
+
+    def test_blt(self):
+        for i in range(4):
+            pyxel.blt(8, (16*i)+134, 0, 0, 0, 16, 16)
 
     def draw_active_handel(self):
         x = self.location.x
@@ -146,10 +173,10 @@ class Bez:
             pyxel.text(x1 + 6, y1 - 2, location, 11)
             last_location = j
 
-    def draw_score(self):
-        score = "{:09}".format(self.score)
+    def draw_info(self):
+        info = "{:09}".format(self.info)
         pyxel.rect(0, 0, WIDTH, 4, COL_BACKGROUND)
-        pyxel.text(1, 1, score, COL_SCORE)
+        pyxel.text(1, 1, info, COL_INFO)
 
 
 # Call Application
