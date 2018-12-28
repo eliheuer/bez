@@ -7,22 +7,14 @@ from random import randint
 Point = namedtuple("Point", ["x", "y"])
 
 #Constants
-COL_BACKGROUND = 0
-COL_DEATH_SCREEN = 10
-TEXT_DEATH = ["GAME OVER", "(Q)UIT", "(R)ESTART"]
-COL_TEXT_DEATH = 0
-HEIGHT_DEATH = 5
-COL_SCORE = 11
-
-WIDTH = 240
-HEIGHT = 240
-
-HEIGHT_SCORE = FONT_HEIGHT = pyxel.constants.FONT_HEIGHT
-
+COL_BACKGROUND = 0 
+COL_SCORE = 12
+WIDTH = 255
+HEIGHT = 255
 START = Point((WIDTH/2) - 2, HEIGHT - 11)
 
 class Bez:
-
+    
     #Initialization.
     def __init__(self):
         pyxel.init(WIDTH, HEIGHT, caption = "Bez!", fps = 60)
@@ -31,14 +23,29 @@ class Bez:
 
     def reset(self):
         self.location = START
-        self.death = False
+        self.done = False
         self.score = 0
+        self.handel_locations = []
+        for i in range(0, 3):
+            self.generate_handel()
+
+    def generate_handel(self):
+        valid = False
+        while not valid:
+            x = randint(8, WIDTH - 8)
+            y = randint(8, HEIGHT - 8)
+            new = Point(x, y)
+            valid = True
+            for i in self.handel_locations:
+                if (x == i.x and y == i.y):
+                    valid = False
+            if valid:
+                self.handel_locations.append(new)
 
     #Update Logic.
     def update(self):
-        if not self.death:
+        if not self.done:
             self.update_location()
-
         if pyxel.btn(pyxel.KEY_Q):
             pyxel.quit()
         elif pyxel.btnp(pyxel.KEY_R):
@@ -61,36 +68,37 @@ class Bez:
 
     #Draw Logic.
     def draw(self):
-        if not self.death:
+        if not self.done:
             pyxel.cls(COL_BACKGROUND)
-            self.draw_spacship()
+            self.draw_active_handel()
             self.draw_score()
+            self.draw_handels()
         else:
             self.draw_death()
 
-    def draw_spacship(self):
+    def draw_active_handel(self):
         x = self.location.x
         y = self.location.y 
-        pyxel.circ(x, y, 4, 4)
+        pyxel.circ(x, y, 4, 11)
+
+    def draw_handels(self):
+        step = 0
+        for i in self.handel_locations:
+            x1 = i.x
+            y1 = i.y
+            if step < 3:
+                x2 = WIDTH/2
+                y2 = HEIGHT/2
+                pyxel.line(x1, y1, x2, y2, 12)
+            pyxel.circ(x1, y1, 4, 8)    
+            location = "(" + str(i.x) + "," + str(i.y) + ")"
+            pyxel.text(x1+6, y1, location, 11)
+            step += 1
 
     def draw_score(self):
-        score = "{:04}".format(self.score)
-        pyxel.rect(0, 0, WIDTH, HEIGHT_SCORE, COL_BACKGROUND)
+        score = "{:09}".format(self.score)
+        pyxel.rect(0, 0, WIDTH, 4, COL_BACKGROUND)
         pyxel.text(1, 1, score, COL_SCORE)
-
-    def draw_death(self):
-        pyxel.cls(COL_DEATH_SCREEN)
-        display_text = TEXT_DEATH[:]
-        display_text.insert(1, "{:04}".format(self.score))
-        for i, text in enumerate(display_text):
-            y_offset = (FONT_HEIGHT + 2) * (i + 5)
-            text_x = self.center_text(text, WIDTH)
-            pyxel.text(text_x, HEIGHT_DEATH + y_offset, text, COL_TEXT_DEATH)
-
-    @staticmethod
-    def center_text(text, page_width, char_width=pyxel.constants.FONT_WIDTH):
-        text_width = len(text) * char_width
-        return (page_width - text_width) // 2
 
 #Call Application
 Bez()
