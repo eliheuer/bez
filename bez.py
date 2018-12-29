@@ -1,4 +1,7 @@
 # Library and module imports
+import argparse
+import defcon
+import extractor
 import pyxel
 import xmltodict
 from collections import namedtuple
@@ -15,6 +18,7 @@ WIDTH = 255
 HEIGHT = 255
 
 
+# Application 
 class Bez:
 
     # Initialization
@@ -22,9 +26,34 @@ class Bez:
         pyxel.init(WIDTH, HEIGHT, caption="Bez", fps=60)
         pyxel.image(0).load(0, 0, "assets/pencil_16x16.png")
         pyxel.mouse(True)
+
         self.read_glif()
         self.reset()
+
         pyxel.run(self.update, self.draw)
+
+        
+    def create_arg_parser():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", help = "input filename")
+        parser.add_argument("-o", help = "output filename")
+        args = parser.parse_args()
+        return args
+
+
+    def use_arg_parser():
+        args = create_arg_parser()
+        ttf_path = args.i
+        ufo_path = args.o
+        print('ttf_path: ', ttf_path)
+        print('ufo_path:', ufo_path)
+        # Make UFO
+        print('Generating UFO...', ufo_path)
+        ufo = defcon.Font()
+        extractor.extractUFO(ttf_path, ufo)
+        ufo.save(ufo_path)
+        print('Done.')
+
 
     def reset(self):
         self.location = Point(WIDTH / 2, HEIGHT / 2)
@@ -33,11 +62,14 @@ class Bez:
         self.handel_locations = []
         self.zoom = 25
         for i in range(0, 9):
-            self.generate_handel()
+            self.generate_random_handel()
+
 
     def read_glif(self):
-        """Reads glyph data from UFO files"""
+        """Reads glyph data from UFO files, creates global variables"""
         print("[+] Reading E_.glif")
+
+        # Read UFO data from .glif file 
         try:
             with open('E_.glif') as ufo:
                 self.glif = xmltodict.parse(ufo.read())
@@ -46,41 +78,41 @@ class Bez:
         else:
             print("[!] Done\n")
 
-        # Name 
-        glyph_name = self.glif['glyph']['@name']
-        print("glyph name:\t", glyph_name)
+        # Read glyph name to variable: self.glif_name
+        self.glif_name = self.glif['glyph']['@name']
+        print("glyph name:\t", self.glyph_name)
 
-        # Format 
-        glyph_format = self.glif['glyph']['@format']
-        print("glyph format:\t", glyph_format)
+        # Read glyph format to variable: self.glif_format
+        self.glyph_format = self.glif['glyph']['@format']
+        print("glyph format:\t", self.glyph_format)
 
-        # Width 
-        glyph_width = self.glif['glyph']['advance']['@width']
-        print("glyph width:\t", glyph_width)
+        # Read glyph width to variable: self.glif_width
+        self.glyph_width = self.glif['glyph']['advance']['@width']
+        print("glyph width:\t", self.glyph_width)
         
-        # Unicode 
-        glyph_unicode = self.glif['glyph']['unicode']['@hex']
-        print("glyph unicode:\t", glyph_unicode)
+        # Read glyph unicode info to variable: self.glif_unicode
+        self.glyph_unicode = self.glif['glyph']['unicode']['@hex']
+        print("glyph unicode:\t", self.glyph_unicode)
 
-        # Get X-points 
-        glyph_x_points = []
+        # Read glyph x-coordinate info to variable: self.glif_x_points
+        self.glyph_x_points = []
         for x_point in self.glif['glyph']['outline']['contour']['point']: 
-            glyph_x_points.append(x_point['@x'])
+            self.glyph_x_points.append(x_point['@x'])
             print("glyph x points:\t", x_point['@x'])
 
-        # Get Y-points 
-        glyph_y_points = []
+        # Read glyph y-coordinate info to variable: self.glif_y_points
+        self.glyph_y_points = []
         for y_point in self.glif['glyph']['outline']['contour']['point']: 
-            glyph_y_points.append(y_point['@x'])
+            self.glyph_y_points.append(y_point['@x'])
             print("glyph y points:\t", y_point['@x'])
 
-        # Get Line type 
-        glyph_line_types = []
+        # Read glyph line types info to variable: self.glif_line_types
+        self.glyph_line_types = []
         for line_type in self.glif['glyph']['outline']['contour']['point']: 
-            glyph_line_types.append(line_type['@x'])
+            self.glyph_line_types.append(line_type['@x'])
             print("glyph line types:\t", line_type['@type'])
 
-    def generate_handel(self):
+    def generate_random_handel(self):
         valid = False
         while not valid:
             x = randint(50, WIDTH - 50)
@@ -92,6 +124,10 @@ class Bez:
                     valid = False
             if valid:
                 self.handel_locations.append(new)
+
+
+    def generate_handel(self):
+        pass
 
     # Update Logic.
     def update(self):
@@ -200,7 +236,6 @@ class Bez:
         info = "{:09}".format(self.info)
         pyxel.rect(0, 0, WIDTH, 4, COL_BACKGROUND)
         pyxel.text(1, 1, info, COL_INFO)
-
 
 # Call Application
 if __name__ == "__main__":
