@@ -36,10 +36,11 @@ class Bez:
             self.generate_handel()
 
     def read_glif(self):
-        print("[+] Reading E_.glig")
+        """Reads glyph data from UFO files"""
+        print("[+] Reading E_.glif")
         try:
-            with open('E_.glif') as fd:
-                self.glif = xmltodict.parse(fd.read())
+            with open('E_.glif') as ufo:
+                self.glif = xmltodict.parse(ufo.read())
         except FileNotFoundError:
             print("[!] Error: File not found")
         else:
@@ -57,11 +58,33 @@ class Bez:
         glyph_width = self.glif['glyph']['advance']['@width']
         print("glyph width:\t", glyph_width)
         
+        # Unicode 
+        glyph_unicode = self.glif['glyph']['unicode']['@hex']
+        print("glyph unicode:\t", glyph_unicode)
+
+        # Get X-points 
+        glyph_x_points = []
+        for x_point in self.glif['glyph']['outline']['contour']['point']: 
+            glyph_x_points.append(x_point['@x'])
+            print("glyph x points:\t", x_point['@x'])
+
+        # Get Y-points 
+        glyph_y_points = []
+        for y_point in self.glif['glyph']['outline']['contour']['point']: 
+            glyph_y_points.append(y_point['@x'])
+            print("glyph y points:\t", y_point['@x'])
+
+        # Get Line type 
+        glyph_line_types = []
+        for line_type in self.glif['glyph']['outline']['contour']['point']: 
+            glyph_line_types.append(line_type['@x'])
+            print("glyph line types:\t", line_type['@type'])
+
     def generate_handel(self):
         valid = False
         while not valid:
-            x = randint(8, WIDTH + 100)
-            y = randint(8, HEIGHT - 8)
+            x = randint(50, WIDTH - 50)
+            y = randint(50, HEIGHT - 50)
             new = Point(x, y)
             valid = True
             for i in self.handel_locations:
