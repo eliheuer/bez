@@ -209,6 +209,10 @@ class Bez:
             if last_location == None:
                 x2 = j.x
                 y2 = j.y
+                fx = j.x
+                fy = j.y
+                lx = j.x
+                ly = j.y
             else:
                 x2 = last_location.x
                 y2 = last_location.y
@@ -219,6 +223,16 @@ class Bez:
             location = "(" + str(int(j.x)) + "," + str(int(j.y)) + ")"
             pyxel.text(x1 + 1, y1 + 3, location, 11)
             last_location = j
+
+
+        list_len = len(self.handel_locations_zoomed)
+        print(list_len)
+        fx = self.handel_locations_zoomed[0].x
+        fy = self.handel_locations_zoomed[0].y
+        lx = j.x
+        ly = j.y
+        
+        pyxel.line(fx, fy, lx, ly, 8)
 
 
 # Call Application
