@@ -1,28 +1,29 @@
-# Library and module imports
+############################
+#                          #
+# Bez: A Simple UFO Editor #
+#                          #
+############################
+
+
 import argparse
 import pyxel
 import xmltodict
-from random import randint
+
+COL_BACKGROUND = 0  # Background color
+COL_INFO = 11       # Text color
+WIDTH = 255         # Workspace width
+HEIGHT = 255        # Workspace height
 
 
-COL_BACKGROUND = 0
-COL_INFO = 11
-WIDTH = 255
-HEIGHT = 255
-
-
-# Quadratic control point
 class Point:
-    __slots__ = ['x', 'y', 't']
-    def __init__(self, x, y, t):
+    __slots__ = ['x', 'y']
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.t = t
+        #self.line_type = line_type
 
-# Application 
 class Bez:
 
-    # Initialization
     def __init__(self):
         pyxel.init(WIDTH, HEIGHT, caption="Bez", fps=60)
         pyxel.image(0).load(0, 0, "assets/pencil_16x16.png")
@@ -32,7 +33,7 @@ class Bez:
         pyxel.run(self.update, self.draw)
  
     def reset(self):
-        self.location = Point(WIDTH / 2, HEIGHT / 2, "Line")
+        self.location = Point(WIDTH / 2, HEIGHT / 2)
         self.handel_locations = []
         self.zoom = 25
         self.zoom_flag = False
@@ -41,18 +42,16 @@ class Bez:
     def create_arg_parser():
         parser = argparse.ArgumentParser()
         parser.add_argument("-i", help = "input filename")
-        parser.add_argument("-o", help = "output filename")
         args = parser.parse_args()
         return args
 
     def use_arg_parser():
         args = create_arg_parser()
-        ttf_path = args.i
-        ufo_path = args.o
+        glif_path = args.i
 
     def read_glif(self):
         """Reads glyph data from UFO files, creates global variables"""
-        print("[+] Reading E_.glif")
+        print("[+] Reading A_.glif")
 
         # Read UFO data from .glif file 
         try:
@@ -91,30 +90,18 @@ class Bez:
             self.glyph_y_points.append(y_point['@y'])
             print("glyph y points:\t", y_point['@y'])
 
-        # Read glyph line types info to variable: self.glif_line_types
-        self.glyph_line_types = []
-        for line_type in self.glif['glyph']['outline']['contour']['point']:
-            self.glyph_line_types.append(line_type['@x'])
-            print("glyph line types:\t", line_type['@type'])
-
-    def generate_random_handels(self):
-        for i in range(9):
-            x = randint(50, WIDTH - 50)
-            y = randint(50, HEIGHT - 50)
-            t = "Line"
-            p = Point(x, y, t)
-            self.handel_locations.append(p)
-
     def generate_handels(self):
-        for i in range(len(self.glyph_line_types)):
+        for i in range(len(self.glyph_x_points)):
             x = int(self.glyph_x_points[i])
             y = int(self.glyph_y_points[i])
-            t = int(self.glyph_line_types[i])
-            p = Point(x, y, t)
+            p = Point(x, y)
             self.handel_locations.append(p)
- 
+
     # Update Logic.
     def update(self):
+        """
+        Set hotkeys to quit (Q) and reset (R)
+        """
         self.update_location()
         if pyxel.btn(pyxel.KEY_Q):
             pyxel.quit()
@@ -122,6 +109,9 @@ class Bez:
             self.reset()
 
     def update_location(self):
+        """
+        Updates location of points
+        """
         if pyxel.btn(pyxel.KEY_RIGHT) and not pyxel.btn(pyxel.KEY_LEFT):
             if self.location.x < WIDTH - 11:
                 old = self.location
@@ -132,6 +122,18 @@ class Bez:
                 old = self.location
                 new = Point(old.x - 1, old.y)
                 self.location = new
+
+        if pyxel.btn(pyxel.KEY_UP) and not pyxel.btn(pyxel.KEY_DOWN):
+            if self.location.y < HEIGHT - 11:
+                old = self.location
+                new = Point(old.x, old.y + 1)
+                self.location = new
+        elif pyxel.btn(pyxel.KEY_DOWN) and not pyxel.btn(pyxel.KEY_UP):
+            if self.location.x > 0:
+                old = self.location
+                new = Point(old.x, old.y - 1)
+                self.location = new
+
         elif pyxel.btn(pyxel.KEY_SPACE):
             # self.next_point()
             pass
@@ -148,6 +150,8 @@ class Bez:
         x = self.location.x
         y = self.location.y
         pyxel.circ(x, y, 2, 11)
+        active_location = "("+str(int(x))+","+str(int(y))+")"
+        pyxel.text(x + 1, y + 3, active_location, 11)
 
     def draw_em_square(self):
         glyph_width = 150
@@ -187,22 +191,21 @@ class Bez:
         # Bottom edge
         pyxel.line(left_edge, bottom_edge + 150,
                    left_edge + glyph_width, bottom_edge + 150, col)
-        
+
     def draw_handels(self):
         last_location = None
 
-        # Zoom
         if self.zoom == 25 and self.zoom_flag == False:
             self.handel_locations_zoomed = []
             for i in self.handel_locations:
                 x = (i.x / 4) + 50
                 y = (i.y / 4) + 50
-                t = i.t
-                p = Point(x, y, t)
+                #t = i.t
+                p = Point(x, y)
                 self.handel_locations_zoomed.append(p)
             #self.handel_locations = self.handel_locations_zoomed
             self.zoom_flag = True
-            
+
         for j in self.handel_locations_zoomed:
             x1 = j.x
             y1 = j.y
@@ -216,22 +219,17 @@ class Bez:
             else:
                 x2 = last_location.x
                 y2 = last_location.y
-
             pyxel.line(x1, y1, x2, y2, 8)
             pyxel.circ(x1, y1, 2, 8)
-
-            location = "(" + str(int(j.x)) + "," + str(int(j.y)) + ")"
+            location = "("+str(int(j.x))+","+str(int(j.y))+")"
             pyxel.text(x1 + 1, y1 + 3, location, 11)
             last_location = j
-
-
         list_len = len(self.handel_locations_zoomed)
         print(list_len)
         fx = self.handel_locations_zoomed[0].x
         fy = self.handel_locations_zoomed[0].y
         lx = j.x
         ly = j.y
-        
         pyxel.line(fx, fy, lx, ly, 8)
 
 
